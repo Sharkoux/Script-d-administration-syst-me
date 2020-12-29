@@ -1,0 +1,37 @@
+﻿#Création d'un accès PowerShell Web Access (après installation AD DNS Foret)
+Import-Module ActiveDirectory
+$domainname = ([System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain() | ft Forest)
+$computername = [System.Environment]::MachineName 
+Enable-PSRemoting
+
+
+echo "Ce script permet l'installation du PowerShell Web Access, il fait suite à une installation du serveur dans un domaine"
+
+$choix = (Read-Host "Voulez-vous poursuivre? [Y/N]")
+
+if ($choix -eq "Y") {
+
+    
+    echo "Création d'un utilisateur (Jack) par défaut pour le web access."
+    New-ADUser -Name "Jack" -GivenName "Jack"  -SamAccountName "Jack" -AccountPassword(Read-Host -AsSecureString "Input Password") -Enabled $true
+    Add-ADGroupMember -Identity "Administrateurs" -Members "Jack" -PassThru
+    Install-WindowsFeature -Name Web-Server -IncludeManagementTools
+    Install-WindowsFeature -Name WindowsPowerShellWebAccess -ComputerName $computername -IncludeManagementTools
+    Install-PswaWebApplication -UseTestCertificate
+    Add-PswaAuthorizationRule -RuleName " Accès à $computername pour Jack" -ComputerName $computername -UserName $domainname\Jack -configuration microsoft.powershell
+
+    
+
+}
+
+if ($choix -ne "Y") {
+   
+	echo "Au revoir"
+	Start-Sleep -Seconds 7
+	Exit
+    
+
+}
+
+    
+
