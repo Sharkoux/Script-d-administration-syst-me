@@ -1,0 +1,27 @@
+﻿#script réinitialisation mot de passe ou déverrouillage compte utilisateur
+
+Import-Module ActiveDirectory
+
+$utilisateur = (Read-Host "Quel compte utilisateur nécessite une modification? ")
+
+$users = Get-ADUser -Identity "$utilisateur" 
+
+if ($users -ne $null) {
+
+    $choix = (Read-Host "Voulez vous réinitialiser le mot de passe de $utilisateur [1] ou déverouiller son compte [2]?" ) 
+
+    if ( $choix -eq "1") {
+
+        $NewPassword = (Read-Host "Nouveau mot de passe ")
+        Set-ADAccountPassword -Identity $users -Reset -NewPassword (ConvertTo-SecureString -AsPlainText "$NewPassword" -Force ) 
+        }
+    if ($choix -eq "2") {
+        Unlock-ADAccount $utilisateur
+
+        }
+else {
+
+    echo "ERROR! " 
+    }
+
+    }
