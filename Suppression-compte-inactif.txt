@@ -1,0 +1,15 @@
+﻿#Script d'automatisation de désactivation des comptes AD dont la dernière connexion date de plus de 90jour.
+
+#Force l'execution
+Set-ExecutionPolicy Unrestricted
+
+#Importe le module AD
+Import-Module ActiveDirectory
+
+#Cherche dans les OU les utilisateurs étant inactif depuis 90j+
+
+$LockedAccount = Search-ADAcount -UsersOnly -AccountInactive -TimeSpan 90.00:00:00 -SearchBase "OU=Users,DC=Domaine,DC=Local" | Where {$-.enabled}
+
+#Désactive les comptes incatifs
+$LockedAccount | Set-ADUser -Enabled $false 
+
