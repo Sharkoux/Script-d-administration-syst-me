@@ -1,0 +1,32 @@
+Set-ExecutionPolicy Unrestricted
+
+$vmname = read-host "Quel nom donner à cette machine virtuelle?"
+$switch = read-host "A quel commutateur virtuel connecter cette machine virtuelle?"
+$InstallMedia = read-host "Quel est le système d'exploitation désiré? debian [1], kali [2], windows 10 [3] ou windows serveur 2019 [4] "
+
+
+
+if ($InstallMedia -eq "1") {
+    $media = "chemin"
+}
+if ($InstallMedia -eq "2") {
+    $media = "chemin"
+}
+if ($InstallMedia -eq "3") {
+    $media = "chemin"
+}
+if ($InstallMedia -eq "4") {
+    $media = "chemin"
+}
+
+New-VM -Name $vmname -MemoryStartupBytes 4GB -BootDevice VHD -NewVHDPath "D:\Machine virtuelle\$vmname\$vmname.vhdx" -Path "D:\Machine virtuelle\$vmname" -NewVHDSizeBytes 80GB -Generation 2 -Switch $switch
+
+Add-VMScsiController -VMName $vmname
+Add-VMDvdDrive -VMName $vmname -ControllerNumber 1 -ControllerLocation 0 -Path $media
+$DvdDrive = Get-VMDvdDrive -VMName $vmname
+Set-VMFirmware -VMName $vmname -FirstBootDevice $DvdDrive
+Set-VMFirmware -VMName $vmname -SecureBootTemplate MicrosoftUEFICertificateAuthority
+
+if ($InstallMedia -eq "2") {
+    Set-VMFirmware $vmname -EnableSecureBoot Off
+}
