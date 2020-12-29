@@ -1,0 +1,45 @@
+﻿#Installation nouveau serveur AD windows
+
+Install-WindowsFeature -name AD-Domain-services -IncludeManagementTools
+
+Import-Module ADDSDeployment
+
+$parametrageIp = (Read-Host "Quelle IP fixe attribué ?" )
+$Gateway = (Read-Host "Quelle gateway attribué?" )
+
+New-NetIPAddress –InterfaceAlias Ethernet0 –IPAddress $parametrageIp –PrefixLength 24 –DefaultGateway $Gateway
+
+$choix = (Read-Host "Vous souhaitez installer [1] une nouvelle forêt, [2] un AD dans un domaine existant ou [3] rejoindre un domaine ?  ")
+
+If($choix -eq "1") {
+
+    $domainforet = (Read-Host "Quel nom de domaine attribué? ")
+    Install-ADDSForest -DomainName $domainforet 
+}
+
+If($choix -eq "2") {
+    $newdomain = (Read-Host "Quel domaine rejoindre? ")
+    $ipDNS = (Read-Host "Quel est l'IP de votre DNS? ") 
+    Set-DnsClientServerAddress -InterfaceAlias Ethernet0 -ServerAddresses $ipDNS
+    Install-ADDSDomainController -DomainName $newdomain 
+    Restart-Computer
+ }
+
+If($choix -eq "3") {
+    $domain = (Read-Host "Quel domaine rejoindre? ")
+    $ipDns = (Read-Host "Quel est l'IP de votre DNS?")
+    Set-DnsClientServerAddress -InterfaceAlias Ethernet0 -ServerAddresses $ipDns
+    Add-Computer -DomainName $domain Credential Administrateur@$domain
+    Restart-Computer
+   }
+
+#If($choix -eq "3") {
+    #$domainRODC = (Read-Host "Quel est  le nom du domaine où installer le RODC? " )
+    #$ipDNS = (Read-Host "Quel est l'IP du controleur de domaine principale? ")
+    #Install-ADDSDomainController -DomainName $domainRODC -Credential (Get-Credential $domainRODC\Administrateur) -UseExistingAccount 
+    #}
+
+If($choix -ne "1,2,3") {
+ echo "Error"   
+ 
+}
